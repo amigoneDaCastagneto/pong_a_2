@@ -171,27 +171,34 @@ class Score:
         pygame.display.update(score_rect)
 
     def setScore(self,player):
-        endgame = False
+        return_state = 0
         self.pnt[player.getId()] += 1
 
         #TODO: conteggio più raffinato
         # (2 pti di scarto per fine partita, tiebreak, ecc.)
         if self.pnt[player.getId()] >= self.goal:
             #TODO: info più completa
-            endgame = True
-        return endgame
+            return_state = 2
+
+        #debug
+        print "{} - {}".format(self.pnt[0],self.pnt[1])
+
+        return return_state
 
     def displayWinner(self,screen):
-        if self.pnt == self.goal:
+        text_win = ""
+        if self.pnt[0] == self.goal:
             text_win = "Vince la partita Player 1"
-        else:
+        elif self.pnt[1] == self.goal:
             text_win = "Vince la partita Player 2"
-        winner_text = self.font.render(text_win,True,(255,255,255))
-        winner_rect = winner_text.get_rect()
-        winner_rect.centerx = 320
-        winner_rect.y = 200
-        screen.blit(winner_text,winner_rect)
-        pygame.display.update(winner_rect)
+
+        if text_win != "":
+            winner_text = self.font.render(text_win,True,(255,255,255))
+            winner_rect = winner_text.get_rect()
+            winner_rect.centerx = 320
+            winner_rect.y = 200
+            screen.blit(winner_text,winner_rect)
+            pygame.display.update(winner_rect)
 
 def main(args):
 
@@ -210,8 +217,7 @@ def main(args):
     score.displayScore(screen)
 
     quit = 0
-    ingame = False
-    endgame = False
+    gamestate = 0
 
     while quit == 0:
         screen.blit(backdrop,(0,0))
@@ -222,42 +228,42 @@ def main(args):
                 quit = 1
 
             if ourevent.type == pygame.KEYDOWN:
-                if ourevent.key == pygame.K_z and endgame == False:
+                if ourevent.key == pygame.K_z and gamestate < 2:
                     player1.addY(5)
-                    if ingame == False and ball.getServicePl1():
+                    if gamestate == 0 and ball.getServicePl1():
                         if ball.getY() < 445:
                             ball.addY(5)
-                if ourevent.key == pygame.K_a and endgame == False:
+                if ourevent.key == pygame.K_a and gamestate < 2:
                     player1.addY(-5)
-                    if ingame == False and ball.getServicePl1():
+                    if gamestate == 0 and ball.getServicePl1():
                         if ball.getY() > 63:
                             ball.addY(-5)
-                if ourevent.key == pygame.K_s and endgame == False:
-                    if ingame == False and ball.getServicePl1():
+                if ourevent.key == pygame.K_s and gamestate < 2:
+                    if gamestate == 0 and ball.getServicePl1():
                         ball.start()
-                        ingame = True
+                        gamestate = 1
 
-                if ourevent.key == pygame.K_l and endgame == False:
+                if ourevent.key == pygame.K_l and gamestate < 2:
                     player2.addY(5)
-                    if ingame == False and not(ball.getServicePl1()):
+                    if gamestate == 0 and not(ball.getServicePl1()):
                         if ball.getY() < 445:
                             ball.addY(5)
-                if ourevent.key == pygame.K_p and endgame == False:
+                if ourevent.key == pygame.K_p and gamestate < 2:
                     player2.addY(-5)
-                    if ingame == False and not(ball.getServicePl1()):
+                    if gamestate == 0 and not(ball.getServicePl1()):
                         if ball.getY() > 63:
                             ball.addY(-5)
-                if ourevent.key == pygame.K_o and endgame == False:
-                    if ingame == False and not(ball.getServicePl1()):
+                if ourevent.key == pygame.K_o and gamestate < 2:
+                    if gamestate == 0 and not(ball.getServicePl1()):
                         ball.start()
-                        ingame = True
+                        gamestate = 1
 
                 # N.B.: il tasto escape funziona sempre, per chiudere il gioco
                 if ourevent.key == pygame.K_ESCAPE:
                     #TODO: qualcosa di più "mosso"
                     quit = 1
 
-        if ball.getX() <= 10:
+        if ball.getX() <= 9:
             diff_pl1_x,diff_pl1_y = player1.diffPos(ball)
             if diff_pl1_x < 10 and (diff_pl1_y < 40 and diff_pl1_y > -10):
                 ball.setSpeedX(-ball.speedX())
@@ -266,10 +272,8 @@ def main(args):
                     ball.setSpeedY(-ball.speedY())
             else:
                 # palla persa da player1
-                ingame = False
-                #score.displayScore(screen)
-                endgame = score.setScore(player2)
-                if endgame == False:
+                gamestate = score.setScore(player2)
+                if gamestate < 2:
                     pygame.time.delay(500)
                     if ball.getServicePl1():
                         ball.reset(player1)
@@ -278,18 +282,17 @@ def main(args):
                 else:
                     ball.reset(player2)
 
-        elif ball.getX() >= 618:
+        elif ball.getX() >= 619:
             diff_pl2_x,diff_pl2_y = player2.diffPos(ball)
             if diff_pl2_x < 10 and (diff_pl2_y < 40 and diff_pl2_y > -10):
                 ball.setSpeedX(-ball.speedX())
                 #TODO: in base alla posizione della palla sulla racchetta si può anche variare l'angolo...
                 if (ball.speedY() * player2.dirY()) < 0: #i due spostamenti sono discordi
-                    ball.setSspeedY(-ball.speedY())
+                    ball.setSpeedY(-ball.speedY())
             else:
                 # palla persa da player2
-                ingame = False
-                endgame = score.setScore(player1)
-                if endgame == False:
+                gamestate = score.setScore(player1)
+                if gamestate < 2:
                     pygame.time.delay(500)
                     if ball.getServicePl1():
                         ball.reset(player1)
@@ -303,7 +306,7 @@ def main(args):
         ball.render(screen)
 
         score.displayScore(screen)
-        if endgame:
+        if gamestate == 2:
             winplayer = score.displayWinner(screen)
 
         pygame.display.update()
