@@ -2,25 +2,25 @@
 # -*- coding: utf-8 -*-
 #
 #  step_1.py
-#  
+#
 #  Copyright 2018 Giacomo <gmx@vega>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 
 import pygame
 
@@ -29,7 +29,6 @@ class GameBall:
 
     def __init__(self,img):
         self.speed = [0,0]
-        self.gamenum = 0
         self.bitmap = pygame.image.load(img)
         self.bitmap.set_colorkey((0,0,0))
 
@@ -70,7 +69,7 @@ class GameBall:
     def makeStep(self):
         self.addX(self.speed[0])
         self.addY(self.speed[1])
-        
+
     def setSpeedX(self,val):
         if abs(val) < 3:
             self.speed[0] = val
@@ -101,12 +100,11 @@ class Paddle:
     def __init__(self,xpos,ypos,img,pl_id):
         self.x = xpos
         self.y = ypos
-        self.oldx = xpos
         self.oldy = ypos
         self.bitmap = pygame.image.load(img)
         self.bitmap.set_colorkey((0,0,0))
         self.pl_id = pl_id
-        
+
     def getId(self):
         return self.pl_id
 
@@ -123,9 +121,6 @@ class Paddle:
 
     def getX(self):
         return self.x
-
-    def dirX(self):
-        return self.x-self.oldx
 
     def diffPos(self,ball):
         diff_posx = abs(ball.getX() - self.x)
@@ -150,7 +145,7 @@ def main(args):
     ball.reset(player1)
 
     quit = 0
-    ingame = False
+    gamestate = 0
 
     while quit == 0:
         screen.blit(backdrop,(0,0))
@@ -163,37 +158,35 @@ def main(args):
             if ourevent.type == pygame.KEYDOWN:
                 if ourevent.key == pygame.K_z:
                     player1.addY(5)
-                    if ingame == False:
+                    if gamestate == 0:
                         if ball.getY() < 445:
                             ball.addY(5)
                 if ourevent.key == pygame.K_a:
                     player1.addY(-5)
-                    if ingame == False:
+                    if gamestate == 0:
                         if ball.getY() > 63:
                             ball.addY(-5)
                 if ourevent.key == pygame.K_s:
-                    if ingame == False:
+                    if gamestate == 0:
                         ball.start()
-                        ingame = True
+                        gamestate = 1
 
                 if ourevent.key == pygame.K_ESCAPE:
                     #TODO: qualcosa di più "mosso"
                     quit = 1
 
-        if ball.getX() <= 10:
+        if ball.getX() <= 9:
             diff_pl1_x,diff_pl1_y = player1.diffPos(ball)
-            if diff_pl1_x < 11 and (diff_pl1_y < 40 and diff_pl1_y > -10):
+            if diff_pl1_x < 10 and (diff_pl1_y < 40 and diff_pl1_y > -10):
                 ball.setSpeedX(-ball.speedX())
-                #TODO: in base alla posizione della palla sulla racchetta si può anche variare l'angolo...
                 if (ball.speedY() * player1.dirY()) < 0: #i due spostamenti sono discordi
                     ball.setSpeedY(-ball.speedY())
             else:
                 # palla persa da player1
-                ingame = False
+                gamestate = 0
                 ball.reset(player1)
 
         if ball.getX() >= 629:
-            #TODO: gestione palla persa da player2
             ball.setSpeedX(-ball.speedX())
 
         player1.render(screen)
