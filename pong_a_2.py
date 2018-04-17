@@ -2,25 +2,25 @@
 # -*- coding: utf-8 -*-
 #
 #  pong_2.py
-#  
+#
 #  Copyright 2018 Giacomo <gmx@vega>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
-#  
+#
+#
 
 import pygame
 import math # per il turno di battuta e i calcoli sul rimbalzo della racchetta
@@ -46,7 +46,7 @@ class GameBall:
         self.gamenum += 1
         if self.getY() > 320:
             self.speed = [-1,1]
-        else: 
+        else:
             self.speed = [1,1]
 
     def addX(self,val):
@@ -78,7 +78,7 @@ class GameBall:
     def makeStep(self):
         self.addX(self.speed[0])
         self.addY(self.speed[1])
-        
+
     def setSpeedX(self,val):
         if abs(val) < 3:
             self.speed[0] = val
@@ -102,7 +102,7 @@ class GameBall:
     def render(self,screen):
         self.makeStep()
         screen.blit(self.bitmap,(self.x, self.y))
-    
+
     def getServicePl1(self):
         if self.gamenum == 0:
             return True
@@ -119,12 +119,11 @@ class Paddle:
     def __init__(self,xpos,ypos,img,pl_id):
         self.x = xpos
         self.y = ypos
-        self.oldx = xpos
         self.oldy = ypos
         self.bitmap = pygame.image.load(img)
         self.bitmap.set_colorkey((0,0,0))
         self.pl_id = pl_id
-        
+
     def getId(self):
         return self.pl_id
 
@@ -142,9 +141,6 @@ class Paddle:
     def getX(self):
         return self.x
 
-    def dirX(self):
-        return self.x-self.oldx
-
     def diffPos(self,ball):
         diff_posx = abs(ball.getX() - self.x)
         diff_posy = ball.getY() - self.y #N.B.: qui il segno è importante...
@@ -155,7 +151,7 @@ class Paddle:
 
 
 class Score:
-    
+
     def __init__(self,goal):
         self.pnt = [0,0]
         self.goal = goal
@@ -180,9 +176,6 @@ class Score:
             #TODO: info più completa
             return_state = 2
 
-        #debug
-        print "{} - {}".format(self.pnt[0],self.pnt[1])
-
         return return_state
 
     def displayWinner(self,screen):
@@ -199,6 +192,7 @@ class Score:
             winner_rect.y = 200
             screen.blit(winner_text,winner_rect)
             pygame.display.update(winner_rect)
+
 
 def main(args):
 
@@ -221,7 +215,7 @@ def main(args):
 
     while quit == 0:
         screen.blit(backdrop,(0,0))
-        
+
         for ourevent in pygame.event.get():
 
             if ourevent.type == pygame.QUIT:
